@@ -54,5 +54,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Run migrations
+        run: npm run migration:run
+
       - name: Test
         run: npm test --if-present
