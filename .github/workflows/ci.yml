@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-migrate-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: db_user
+          POSTGRES_PASSWORD: "123456"
+          POSTGRES_DB: db_crud_project
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U db_user -d db_crud_project"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      NODE_ENV: test
+      PORT: 3000
+
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: db_user
+      DB_PASSWORD: "123456"
+      DB_DATABASE: db_crud_project
+
+      JWT_SECRET: ci_secret_change_me
+      JWT_EXPIRES_IN: 1d
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run migrations
+        run: npm run migration:run
+
+      # Nếu bạn có test thì giữ. Nếu chưa có, nó sẽ tự skip nhờ --if-present
+      - name: Test
+        run: npm test --if-present
