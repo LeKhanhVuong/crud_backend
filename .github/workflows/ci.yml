@@ -54,9 +54,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run migrations
-        run: npm run migration:run
-
-      # Nếu bạn có test thì giữ. Nếu chưa có, nó sẽ tự skip nhờ --if-present
       - name: Test
         run: npm test --if-present
